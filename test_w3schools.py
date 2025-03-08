@@ -1,17 +1,21 @@
+import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import time
 
-# Configurar el WebDriver para Edge
-options = webdriver.EdgeOptions()
-options.add_experimental_option("detach", True)
-driver = webdriver.Edge(options=options)
+@pytest.fixture
+def driver():
+    options = webdriver.EdgeOptions()
+    options.add_experimental_option("detach", True)
+    driver = webdriver.Edge(options=options)
+    driver.maximize_window()
+    yield driver
+    driver.quit()
 
 # Caso de Prueba 1: Buscar "Python" en W3Schools
-def test_search_python():
+def test_search_python(driver):
     driver.get("https://www.w3schools.com/")
-    driver.maximize_window()
     time.sleep(2)
     
     search_box = driver.find_element(By.ID, "search2")
@@ -21,19 +25,17 @@ def test_search_python():
     
     results = driver.find_elements(By.CLASS_NAME, "contentcontainer")
     assert len(results) > 0, "No se encontraron resultados para 'Python'"
-    print("Caso de Prueba 1: Búsqueda de 'Python' exitosa.")
 
 # Caso de Prueba 2: Verificar que el botón de 'Tutorials' está presente
-def test_tutorials_button():
+def test_tutorials_button(driver):
     driver.get("https://www.w3schools.com/")
     time.sleep(2)
     
     tutorials_button = driver.find_element(By.LINK_TEXT, "Tutorials")
     assert tutorials_button.is_displayed(), "El botón 'Tutorials' no está visible"
-    print("Caso de Prueba 2: Botón 'Tutorials' encontrado correctamente.")
 
 # Caso de Prueba 3: Navegar a la sección de Python Tutorial
-def test_navigate_python_tutorial():
+def test_navigate_python_tutorial(driver):
     driver.get("https://www.w3schools.com/")
     time.sleep(2)
 
@@ -45,13 +47,4 @@ def test_navigate_python_tutorial():
     python_link.click()
     time.sleep(2)
     
-    assert "Introduction to Python" in driver.title, "No se navegó correctamente a la página de Python Tutorial"
-    print("Caso de Prueba 3: Navegación al tutorial de Python exitosa.")
-
-# Ejecutar los casos de prueba
-test_search_python()
-test_tutorials_button()
-test_navigate_python_tutorial()
-
-# Cerrar el navegador
-driver.quit()
+    assert "Python" in driver.title, "No se navegó correctamente a la página de Python Tutorial"
